@@ -1,30 +1,77 @@
-import { useState } from 'react';
-import { kyc_vault_backend } from 'declarations/kyc_vault_backend';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import UserDashboard from './components/UserDashboard';
+import AdminDashboard from './components/AdminDashboard';
+import ServiceVerification from './components/ServiceVerfication';
+import Login from './components/Login';
+import './index.scss';
 
 function App() {
-  const [greeting, setGreeting] = useState('');
+  const [userLoggedIn, setUserLoggedIn] = useState(localStorage.getItem('email'));
+  const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    kyc_vault_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("User logged in state:", userLoggedIn);
+    console.log("Current user email:", currentUserEmail);
+  }, [userLoggedIn, currentUserEmail]);
+
+  const handleUserLogin = (email) => {
+    setCurrentUserEmail(email);
+    localStorage.setItem('email', email);
+    setUserLoggedIn(true);
+  };
 
   return (
-    <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
-      <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
-    </main>
+    <Router>
+      <div className="App">
+        <nav className="navbar">
+          <h1>OnChain KYC Vault</h1>
+          <div className="nav-links">
+            <a href="/user">User Portal</a>
+            <a href="/admin">Admin Portal</a>
+            <a href="/verify">Service Verification</a>
+          </div>
+        </nav>
+
+        <div className="content-container">
+          <Routes>
+            <Route path="/" element={<Navigate to="/user" />} />
+            <Route 
+              path="/user" 
+              element={
+                userLoggedIn ? (
+                  <UserDashboard 
+                    userEmail={currentUserEmail} 
+                    onLogout={() => setUserLoggedIn(false)}
+                  />
+                ) : (
+                  <Login 
+                    type="user" 
+                    onLogin={handleUserLogin}
+                  />
+                )
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                adminLoggedIn ? (
+                  <AdminDashboard onLogout={() => setAdminLoggedIn(false)} />
+                ) : (
+                  <Login 
+                    type="admin" 
+                    onLogin={() => setAdminLoggedIn(true)}
+                  />
+                )
+              } 
+            />
+            <Route path="/verify" element={<ServiceVerification />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
 
