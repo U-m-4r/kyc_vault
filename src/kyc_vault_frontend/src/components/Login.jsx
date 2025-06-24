@@ -36,7 +36,19 @@ const Login = ({ type = "user", onLogin }) => {
         } else {
           // For MVP, we'll just simulate login for users
           // In production, you'd implement proper authentication
-          onLogin(email);
+          // onLogin(email);
+          try {
+            const result = await kyc_vault_backend.userLogin(email, password);
+            if ("ok" in result) {
+              onLogin(email);
+              // navigate("/user");
+            } else {
+              setMessage(result.err);
+            }
+          } catch (error) {
+            console.error("User login error:", error);
+            setMessage("Invalid username or password");
+          }
         }
       }
     } catch (error) {
@@ -54,8 +66,8 @@ const Login = ({ type = "user", onLogin }) => {
           {type === "admin"
             ? "Admin Login"
             : isRegistering
-            ? "User Registration"
-            : "User Login"}
+              ? "User Registration"
+              : "User Login"}
         </h2>
 
         {type === "admin" && (
@@ -93,10 +105,10 @@ const Login = ({ type = "user", onLogin }) => {
             {loading
               ? "Processing..."
               : type === "admin"
-              ? "Login"
-              : isRegistering
-              ? "Register"
-              : "Login"}
+                ? "Login"
+                : isRegistering
+                  ? "Register"
+                  : "Login"}
           </button>
         </form>
 
@@ -117,9 +129,8 @@ const Login = ({ type = "user", onLogin }) => {
 
         {message && (
           <div
-            className={`message ${
-              message.includes("successful") ? "success" : "error"
-            }`}
+            className={`message ${message.includes("successful") ? "success" : "error"
+              }`}
           >
             {message}
           </div>
