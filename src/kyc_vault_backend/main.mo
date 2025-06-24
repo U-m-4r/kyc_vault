@@ -9,13 +9,13 @@ import Iter "mo:base/Iter";
 actor KYCVault {
 
   // Types
-  public type KYCStatus = {
+  type KYCStatus = {
     #Pending;
     #Approved;
     #Rejected;
   };
 
-  public type UserProfile = {
+  type UserProfile = {
     id : Text;
     email : Text;
     fullName : Text;
@@ -26,9 +26,10 @@ actor KYCVault {
     submittedAt : Int;
     reviewedAt : ?Int;
     reviewComments : ?Text;
+    password : Text;
   };
 
-  public type VerificationCode = {
+  type VerificationCode = {
     code : Text;
     userId : Text;
     createdAt : Int;
@@ -59,7 +60,7 @@ actor KYCVault {
     Text.hash,
   );
 
-  private func initializeAdmin() {
+  func initializeAdmin() {
     switch (admins.get("admin@kycvault.com")) {
       case (?_) { /* Admin already exists */ };
       case null {
@@ -69,13 +70,13 @@ actor KYCVault {
   };
 
   // Helper function to generate random code
-  private func generateRandomCode() : Text {
+  func generateRandomCode() : Text {
     let timestamp = Int.abs(Time.now());
     "KYC" # Int.toText(timestamp % 1000000);
   };
 
   // Initialize data from stable variables
-  private func initialize() {
+  func initialize() {
     // Add user entries
     for ((k, v) in userEntries.vals()) {
       users.put(k, v);
@@ -94,7 +95,10 @@ actor KYCVault {
     initializeAdmin();
   };
 
-  initialize();
+  public func initializeSystem() : async () {
+    initialize();
+  };
+
 
   // User Functions
   public func registerUser(email : Text, _password : Text) : async Result.Result<Text, Text> {
@@ -115,6 +119,7 @@ actor KYCVault {
           submittedAt = Time.now();
           reviewedAt = null;
           reviewComments = null;
+          password = _password;
         };
         users.put(email, user);
         #ok("User registered successfully");
@@ -142,6 +147,7 @@ actor KYCVault {
           submittedAt = Time.now();
           reviewedAt = null;
           reviewComments = null;
+          password = user.password;
         };
         users.put(email, updatedUser);
         #ok("KYC submitted successfully");
@@ -175,6 +181,23 @@ actor KYCVault {
     };
   };
 
+  // User Authentication
+  public func userLogin(email : Text, _password : Text) : async Result.Result<Text, Text> {
+  switch (users.get(email)) {
+    case (?user) {
+      if (user.password == _password) {
+        #ok("Login successful");
+      } else {
+        #err("Incorrect password");
+      };
+    };
+    case null {
+      #err("User not found");
+    };
+  };
+};
+
+
   public query func getPendingKYCs() : async [UserProfile] {
     let allUsers = users.vals();
     Array.filter<UserProfile>(
@@ -206,6 +229,7 @@ actor KYCVault {
           submittedAt = user.submittedAt;
           reviewedAt = ?Time.now();
           reviewComments = comments;
+          password = user.password;
         };
         users.put(userEmail, updatedUser);
         #ok("KYC approved successfully");
@@ -230,6 +254,7 @@ actor KYCVault {
           submittedAt = user.submittedAt;
           reviewedAt = ?Time.now();
           reviewComments = comments;
+          password = user.password;
         };
         users.put(userEmail, updatedUser);
         #ok("KYC rejected successfully");

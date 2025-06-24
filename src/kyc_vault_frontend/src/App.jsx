@@ -7,7 +7,7 @@ import Login from './components/Login';
 import './index.scss';
 
 function App() {
-  const [userLoggedIn, setUserLoggedIn] = useState(localStorage.getItem('email'));
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
 
@@ -23,6 +23,13 @@ function App() {
     setUserLoggedIn(true);
   };
 
+  const handleUserLogout = () => {
+    setUserLoggedIn(false);
+    setCurrentUserEmail("");
+    localStorage.removeItem("email");
+  };
+
+
   return (
     <Router>
       <div className="App">
@@ -37,35 +44,43 @@ function App() {
 
         <div className="content-container">
           <Routes>
-            <Route path="/" element={<Navigate to="/user" />} />
-            <Route 
-              path="/user" 
+            <Route
+              path="/"
               element={
                 userLoggedIn ? (
-                  <UserDashboard 
-                    userEmail={currentUserEmail} 
-                    onLogout={() => setUserLoggedIn(false)}
+                  <Navigate to="/user" />
+                ) : (
+                  <Login type="user" onLogin={handleUserLogin} />
+                )
+              }
+            />
+
+            <Route
+              path="/user"
+              element={
+                userLoggedIn ? (
+                  <UserDashboard
+                    userEmail={currentUserEmail}
+                    onLogout={handleUserLogout}
                   />
                 ) : (
-                  <Login 
-                    type="user" 
-                    onLogin={handleUserLogin}
-                  />
+                  <Navigate to="/" />
                 )
-              } 
+              }
             />
-            <Route 
-              path="/admin" 
+            
+            <Route
+              path="/admin"
               element={
                 adminLoggedIn ? (
                   <AdminDashboard onLogout={() => setAdminLoggedIn(false)} />
                 ) : (
-                  <Login 
-                    type="admin" 
+                  <Login
+                    type="admin"
                     onLogin={() => setAdminLoggedIn(true)}
                   />
                 )
-              } 
+              }
             />
             <Route path="/verify" element={<ServiceVerification />} />
           </Routes>
