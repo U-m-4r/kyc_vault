@@ -80,6 +80,7 @@ const UserDashboard = ({
       } else {
         setMessage(result.err);
       }
+      await loadUserProfile();
     } catch (error) {
       setMessage("Error generating verification code.");
     }
@@ -90,14 +91,14 @@ const UserDashboard = ({
   }
 
   const getStatusColor = (status) => {
-    if (status.Approved) return "green";
-    if (status.Rejected) return "red";
+    if ("Approved" in status) return "green";
+    if ("Rejected" in status) return "red";
     return "orange";
   };
 
   const getStatusText = (status) => {
-    if (status.Approved) return "Approved";
-    if (status.Rejected) return "Rejected";
+    if ("Approved" in status) return "Approved";
+    if ("Rejected" in status) return "Rejected";
     return "Pending";
   };
 
@@ -188,7 +189,7 @@ const UserDashboard = ({
               </p>
             </div>
           )}
-          
+
         </div>
 
         {userProfile?.status?.Approved && (
@@ -217,9 +218,8 @@ const UserDashboard = ({
 
         {message && (
           <div
-            className={`message ${
-              message.includes("successfully") ? "success" : "error"
-            }`}
+            className={`message ${message.includes("successfully") ? "success" : "error"
+              }`}
           >
             {message}
           </div>

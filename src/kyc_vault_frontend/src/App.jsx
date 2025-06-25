@@ -11,6 +11,14 @@ function App() {
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
 
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('email');
+    if (storedEmail) {
+      setCurrentUserEmail(storedEmail);
+      setUserLoggedIn(true);
+    }
+  }, []);
+
   // Debug: Log state changes
   useEffect(() => {
     console.log("User logged in state:", userLoggedIn);
@@ -68,7 +76,7 @@ function App() {
                 )
               }
             />
-            
+
             <Route
               path="/admin"
               element={

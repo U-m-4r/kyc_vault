@@ -356,8 +356,14 @@ actor KYCVault {
     codeEntries := Iter.toArray(verificationCodes.entries());
   };
 
+  public shared({}) func init() : async () {
+    initialize();
+  };
+
   system func postupgrade() {
     // Re-initialize the HashMaps from stable storage
     initialize();
   };
-};
+}
+
+
