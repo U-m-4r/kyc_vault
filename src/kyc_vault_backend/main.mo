@@ -150,7 +150,19 @@ actor KYCVault {
           password = user.password;
         };
         users.put(email, updatedUser);
-        #ok("KYC submitted successfully");
+
+        // Generate and store verification code
+        let code = generateRandomCode();
+        let verificationCode : VerificationCode = {
+          code = code;
+          userId = user.id;
+          createdAt = Time.now();
+          expiresAt = Time.now() + (24 * 60 * 60 * 1000_000_000); // 24 hours
+          used = false;
+        };
+        verificationCodes.put(code, verificationCode);
+
+        #ok(code); // Return the code!
       };
       case null {
         #err("User not found");
