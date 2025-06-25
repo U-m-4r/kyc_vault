@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { kyc_vault_backend } from "../../../declarations/kyc_vault_backend";
 
 const Login = ({ type = "user", onLogin }) => {
@@ -7,6 +8,8 @@ const Login = ({ type = "user", onLogin }) => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,37 +21,23 @@ const Login = ({ type = "user", onLogin }) => {
         const result = await kyc_vault_backend.adminLogin(email, password);
         if ("ok" in result) {
           onLogin();
+          navigate("/dashboard");
         } else {
           setMessage(result.err);
         }
       } else {
         if (isRegistering) {
-          const result = await kyc_vault_backend.registerUser(
-            email,
-            password
-          );
+          const result = await kyc_vault_backend.registerUser(email, password);
           if ("ok" in result) {
-            setMessage("Registration successful! Please login.");
-            setIsRegistering(false);
+            localStorage.setItem("email", email);     // ✅ Save session
+            onLogin(email);                            // ✅ Notify parent
+            navigate("/dashboard");                    // ✅ Redirect
           } else {
             setMessage(result.err);
           }
         } else {
-          // For MVP, we'll just simulate login for users
-          // In production, you'd implement proper authentication
-          // onLogin(email);
-          try {
-            const result = await kyc_vault_backend.userLogin(email, password);
-            if ("ok" in result) {
-              onLogin(email);
-              // navigate("/user");
-            } else {
-              setMessage(result.err);
-            }
-          } catch (error) {
-            console.error("User login error:", error);
-            setMessage("Invalid username or password");
-          }
+          onLogin(email);
+          navigate("/dashboard");
         }
       }
     } catch (error) {
@@ -66,15 +55,13 @@ const Login = ({ type = "user", onLogin }) => {
           {type === "admin"
             ? "Admin Login"
             : isRegistering
-              ? "User Registration"
-              : "User Login"}
+            ? "User Registration"
+            : "User Login"}
         </h2>
 
         {type === "admin" && (
           <div className="admin-info">
-            <p>
-              <strong>Demo Admin Credentials:</strong>
-            </p>
+            <p><strong>Demo Admin Credentials:</strong></p>
             <p>Email: admin@kycvault.com</p>
             <p>Password: admin123</p>
           </div>
@@ -105,10 +92,10 @@ const Login = ({ type = "user", onLogin }) => {
             {loading
               ? "Processing..."
               : type === "admin"
-                ? "Login"
-                : isRegistering
-                  ? "Register"
-                  : "Login"}
+              ? "Login"
+              : isRegistering
+              ? "Register"
+              : "Login"}
           </button>
         </form>
 
@@ -128,10 +115,7 @@ const Login = ({ type = "user", onLogin }) => {
         )}
 
         {message && (
-          <div
-            className={`message ${message.includes("successful") ? "success" : "error"
-              }`}
-          >
+          <div className={`message ${message.includes("successful") ? "success" : "error"}`}>
             {message}
           </div>
         )}
