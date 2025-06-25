@@ -40,6 +40,7 @@ const UserDashboard = ({
     e.preventDefault();
     setSubmitting(true);
     setMessage("");
+    setVerificationCode("");
 
     try {
       // For MVP, we'll use a placeholder URL for document
@@ -55,8 +56,9 @@ const UserDashboard = ({
       );
 
       if ("ok" in result) {
-        setMessage("KYC submitted successfully!");
-        loadUserProfile();
+        setVerificationCode(result.ok); // Show the verification code!
+        setMessage("KYC submitted successfully! Your verification code: " + result.ok);
+        await loadUserProfile();
       } else {
         setMessage(result.err);
       }
@@ -174,6 +176,19 @@ const UserDashboard = ({
               {submitting ? "Submitting..." : "Submit KYC"}
             </button>
           </form>
+          {/* Show the verification code after KYC submission */}
+          {verificationCode && (
+            <div className="verification-code">
+              <strong>Your Verification Code:</strong>
+              <div className="code">{verificationCode}</div>
+              <p>
+                <small>
+                  This code expires in 24 hours and can only be used once.
+                </small>
+              </p>
+            </div>
+          )}
+          
         </div>
 
         {userProfile?.status?.Approved && (
