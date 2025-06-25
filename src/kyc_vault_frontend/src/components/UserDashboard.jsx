@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { kyc_vault_backend } from "../../../declarations/kyc_vault_backend";
+import { buildErrorMessage } from "vite";
 
 const UserDashboard = ({
   userEmail,
@@ -105,7 +106,7 @@ const UserDashboard = ({
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h2>User Dashboard</h2>
+        <h2 style={{color:'blue'}}>User Dashboard</h2>
         <div>
           <span>Welcome, {userEmail}</span>
           <button onClick={onLogout} className="logout-btn">

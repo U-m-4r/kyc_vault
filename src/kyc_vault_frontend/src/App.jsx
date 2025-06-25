@@ -42,7 +42,7 @@ function App() {
     <Router>
       <div className="App">
         <nav className="navbar">
-          <h1>OnChain KYC Vault</h1>
+          <h1 style={{color:'blue'}}>OnChain KYC Vault</h1>
           <div className="nav-links">
             <a href="/user">User Portal</a>
             <a href="/admin">Admin Portal</a>
