@@ -40,7 +40,7 @@ actor KYCVault {
   // Storage
   private stable var userEntries : [(Text, UserProfile)] = [];
   private stable var codeEntries : [(Text, VerificationCode)] = [];
-  private stable var adminEntries : [(Text, Text)] = [];
+  private stable var adminEntries : [(Text, Text)] = [("admin@kycvault.com", "admin123")];
 
   private var users = Map.HashMap<Text, UserProfile>(
     10,
@@ -87,18 +87,21 @@ actor KYCVault {
       admins.put(k, v);
     };
 
+    // If admin not found, create it
+    if (admins.size() == 0) {
+      admins.put("admin@kycvault.com", "admin123");
+    };
+
     // Add verification code entries
     for ((k, v) in codeEntries.vals()) {
       verificationCodes.put(k, v);
     };
 
     initializeAdmin();
+
   };
 
-  public func initializeSystem() : async () {
-    initialize();
-  };
-
+  
 
   // User Functions
   public func registerUser(email : Text, _password : Text) : async Result.Result<Text, Text> {
@@ -359,6 +362,7 @@ actor KYCVault {
   public shared({}) func init() : async () {
     initialize();
   };
+
 
   system func postupgrade() {
     // Re-initialize the HashMaps from stable storage
